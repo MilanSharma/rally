@@ -1,0 +1,41 @@
+name: Build Android & iOS
+
+on:
+  # Allows you to run this manually from the Actions tab
+  workflow_dispatch:
+  # builds on every push to main (optional - can be removed to save credits)
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: EAS Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [android, ios]
+    
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: bun install
+
+      - name: 🚀 Build App
+        # This builds using the 'preview' profile defined in eas.json
+        # Change 'preview' to 'production' if you are ready for App Store/Play Store
+        run: eas build --platform ${{ matrix.platform }} --profile preview --non-interactive
